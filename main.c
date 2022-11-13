@@ -37,7 +37,9 @@ int         duarrlen(char **array);
 char	    **duarrfree(char **arr);
 char    	*ft_strdup(const char *s1);
 char        **get_output_data(char **args, t_options *out_options);
-int         ft_strcmp(char *s1, char *s2);
+int         ft_strcmp_nc(char *s1, char *s2);
+char        to_lower(char chr);
+char        **duarrbsort(char **arr);
 
 
 int main(int argc, char **argv){
@@ -88,31 +90,37 @@ char **get_output_data(char **args, t_options *out_options){
                 output_strings = stradd(tmp->d_name, output_strings);
         closedir(opened);
     }
-
-    for(int i = 0; i < duarrlen(output_strings); ++i)
-        for (int j = 0; j < duarrlen(output_strings) - i - 1; ++j)
-            if(ft_strcmp(output_strings[j], output_strings[j+1]) > 0){
-                char *str = output_strings[j];
-                output_strings[j] = output_strings[j + 1];
-                output_strings[j + 1] = str;
-            }
-
-
+    output_strings = duarrbsort(output_strings);
 
     for (int i = 0; i < duarrlen(output_strings); ++i) {
-        printf("%s ", output_strings[i]);
+        printf("%s  ", output_strings[i]);
     }
     return NULL;
 }
 
-int	ft_strcmp(char *s1, char *s2)
+char **duarrbsort(char **arr){
+    for(int i = 0; i < duarrlen(arr); ++i)
+        for (int j = 0; j < duarrlen(arr) - i - 1; ++j)
+            if(ft_strcmp_nc(arr[j], arr[j+1]) > 0){
+                char *str = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = str;
+            }
+    return arr;
+}
+
+char to_lower(char chr){
+    return (chr >= 'A' && chr <= 'Z') ? (chr + ('a' - 'A')) : chr;
+}
+
+int	ft_strcmp_nc(char *s1, char *s2)//nc - no case
 {
     int i;
 
     i = 0;
-    while (s1[i] == s2[i] && s1[i] != '\0' && s2[i] != '\0')
+    while (to_lower(s1[i]) == to_lower(s2[i]) && s1[i] != '\0' && s2[i] != '\0')
         i++;
-    return (s1[i] - s2[i]);
+    return (to_lower(s1[i]) - to_lower(s2[i]));
 }
 
 
