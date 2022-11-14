@@ -40,17 +40,21 @@ char        **get_output_data(char **args, t_options *out_options);
 int         ft_strcmp_nc(char *s1, char *s2);
 char        to_lower(char chr);
 char        **duarrbsort(char **arr);
+void        output_data(char **data, t_options *out_options);
+char        **duarrtsort(char **arr);
 
 
 int main(int argc, char **argv){
     t_options   *out_options = get_output_options(argv, argc);//Gather Options
     char        **out_list;
+    char        **out_data;
 
     if (argc > 1)
         out_list = get_output_args(argv, argc);//Gather the names
     if (argc == 1 || out_list == NULL)
         out_list = stradd("./", out_list);
-    get_output_data(out_list, out_options);
+    out_data = get_output_data(out_list, out_options);
+    output_data(out_data, out_options);
 //    char linkdata[1024];
 //    readlink("./kek", linkdata, 1024);
 //    printf("%s", linkdata);
@@ -77,28 +81,50 @@ int main(int argc, char **argv){
     return 0;
 }
 
+void output_data(char **data, t_options *out_options){
+    for (int i = 0; i < duarrlen(data); ++i) {
+        int j = out_options->r_flag ? duarrlen(data) - i - 1 : i;
+        write(1, data[j], ft_strlen(data[j]));
+        write(1, "  ", 2);
+    }
+}
+
+
 char **get_output_data(char **args, t_options *out_options){
     DIR             *opened = NULL;
     struct dirent   *tmp = NULL;
     struct stat     fileStat;
     char            **output_strings = NULL;
 
-    for (int i = 0; i < duarrlen(args); ++i) {
+    for (int i = 0; i < duarrlen(args); ++i){
         opened = opendir(args[i]);
         while ((tmp = readdir(opened)) != NULL)
             if (tmp->d_name[0] != '.' || out_options->a_flag)
                 output_strings = stradd(tmp->d_name, output_strings);
         closedir(opened);
     }
-    output_strings = duarrbsort(output_strings);
-
-    for (int i = 0; i < duarrlen(output_strings); ++i) {
-        printf("%s  ", output_strings[i]);
-    }
-    return NULL;
+    output_strings = out_options->t_flag ? duarrtsort(output_strings) : duarrbsort(output_strings);
+//    opened = opendir("./");
+//    tmp = readdir(opened);
+//    stat(tmp->d_name, &fileStat);
+////    write(1, tmp->d_name, ft_strlen(tmp->d_name));
+//    printf("%s\n", tmp->d_name);
+//    time_t first = fileStat.st_atime;
+//    char *first_tmp = ctime(&first);
+//    tmp = readdir(opened);
+//    stat(tmp->d_name, &fileStat);
+//    printf("%s\n", tmp->d_name);
+//    time_t second = fileStat.st_atime;
+//    char *second_tmp = ctime(&second);
+//    if (first < second)
+//        printf("первый меньше: %s vs %s\n", first_tmp, second_tmp);
+//    else
+//        printf("Первый больше: %s vs %s\n", first_tmp, second_tmp);
+//    closedir(opened);
+    return output_strings;
 }
 
-char **duarrbsort(char **arr){
+char **duarrbsort(char **arr){//bubble - sort method
     for(int i = 0; i < duarrlen(arr); ++i)
         for (int j = 0; j < duarrlen(arr) - i - 1; ++j)
             if(ft_strcmp_nc(arr[j], arr[j+1]) > 0){
@@ -109,16 +135,30 @@ char **duarrbsort(char **arr){
     return arr;
 }
 
+char **duarrtsort(char **arr){//time - sort by time
+    for(int i = 0; i < duarrlen(arr); ++i)
+        for (int j = 0; j < duarrlen(arr) - i - 1; ++j){
+            struct stat firstStat, secondStat;
+            stat(arr[j], &firstStat);
+            stat(arr[j + 1], &secondStat);
+            if(firstStat.st_atime < secondStat.st_atime){
+                char *str = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = str;
+            }
+        }
+    return arr;
+}
+
 char to_lower(char chr){
     return (chr >= 'A' && chr <= 'Z') ? (chr + ('a' - 'A')) : chr;
 }
 
 int	ft_strcmp_nc(char *s1, char *s2)//nc - no case
 {
-    int i;
+    int i = 0;
 
-    i = 0;
-    while (to_lower(s1[i]) == to_lower(s2[i]) && s1[i] != '\0' && s2[i] != '\0')
+    while (s1[i] != '\0' && s2[i] != '\0' && to_lower(s1[i]) == to_lower(s2[i]))
         i++;
     return (to_lower(s1[i]) - to_lower(s2[i]));
 }
@@ -143,10 +183,10 @@ char	**stradd(char *str, char **dst)
 
     if (!str)
         return (0);
-    i = 0;
     tmp = (char **)malloc(sizeof (char *) * (duarrlen(dst) + 2));
     if (!tmp)
         return (dst);
+    i = 0;
     while (dst && i < duarrlen(dst))
     {
         tmp[i] = ft_strdup(dst[i]);
@@ -182,9 +222,8 @@ char	*ft_strdup(const char *s1)
 
 int	duarrlen(char **array)
 {
-    int	i;
+    int	i = 0;
 
-    i = 0;
     while (array && array[i])
         i++;
     return (i);
@@ -264,14 +303,10 @@ int ft_strlen(char *str){
 
 char *ft_strcpy(char *dest, char *src)
 {
-    int i;
+    int i = -1;
 
-    i = 0;
-    while (src[i] != '\0')
-    {
+    while (src[++i] != '\0')
         dest[i] = src[i];
-        i++;
-    }
     dest[i] = '\0';
     return (dest);
 }
