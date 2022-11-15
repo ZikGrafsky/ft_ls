@@ -42,6 +42,7 @@ char        to_lower(char chr);
 char        **duarrbsort(char **arr);
 void        output_data(char **data, t_options *out_options);
 char        **duarrtsort(char **arr);
+char        *get_list_format_data(struct stat fileStat, char *filename);
 
 
 int main(int argc, char **argv){
@@ -81,6 +82,10 @@ int main(int argc, char **argv){
     return 0;
 }
 
+
+
+
+//_____________________________functions___________________________
 void output_data(char **data, t_options *out_options){
     for (int i = 0; i < duarrlen(data); ++i) {
         int j = out_options->r_flag ? duarrlen(data) - i - 1 : i;
@@ -99,29 +104,67 @@ char **get_output_data(char **args, t_options *out_options){
     for (int i = 0; i < duarrlen(args); ++i){
         opened = opendir(args[i]);
         while ((tmp = readdir(opened)) != NULL)
-            if (tmp->d_name[0] != '.' || out_options->a_flag)
-                output_strings = stradd(tmp->d_name, output_strings);
+            if (tmp->d_name[0] != '.' || out_options->a_flag) {
+                if (out_options->l_flag){
+                    stat(tmp->d_name, &fileStat);
+                    output_strings = stradd(get_list_format_data(fileStat, tmp->d_name), output_strings);
+                } else
+                    output_strings = stradd(tmp->d_name, output_strings);
+            }
         closedir(opened);
     }
     output_strings = out_options->t_flag ? duarrtsort(output_strings) : duarrbsort(output_strings);
-//    opened = opendir("./");
-//    tmp = readdir(opened);
-//    stat(tmp->d_name, &fileStat);
-////    write(1, tmp->d_name, ft_strlen(tmp->d_name));
-//    printf("%s\n", tmp->d_name);
-//    time_t first = fileStat.st_atime;
-//    char *first_tmp = ctime(&first);
-//    tmp = readdir(opened);
-//    stat(tmp->d_name, &fileStat);
-//    printf("%s\n", tmp->d_name);
-//    time_t second = fileStat.st_atime;
-//    char *second_tmp = ctime(&second);
-//    if (first < second)
-//        printf("первый меньше: %s vs %s\n", first_tmp, second_tmp);
-//    else
-//        printf("Первый больше: %s vs %s\n", first_tmp, second_tmp);
-//    closedir(opened);
     return output_strings;
+}
+
+char	*ft_strjoin(char const *s1, char const *s2)
+{
+    char			*dest;
+    unsigned int	i;
+
+    i = 0;
+    if (s1 == NULL || s2 == NULL)
+        return (NULL);
+    dest = (char*)malloc(sizeof(*dest) * (ft_strlen((char *)s1) + ft_strlen((char *)s2) + 1));
+    if (dest == NULL)
+        return (NULL);
+    while (*s1 != '\0')
+        dest[i++] = *s1++;
+    while (*s2 != '\0')
+        dest[i++] = *s2++;
+    dest[i] = '\0';
+    return (dest);
+}
+//        lstat(tmp->d_name, &fileStat);
+//        write(1, get_permissions(fileStat), 10);
+//        write(1, ft_itoa((int) fileStat.st_nlink), ft_strlen(ft_itoa((int) fileStat.st_nlink)));
+//        write(1, get_username(fileStat.st_uid), ft_strlen(get_username(fileStat.st_uid)));
+//        write(1, get_groupname(fileStat.st_gid), ft_strlen(get_groupname(fileStat.st_gid)));
+//        write(1, ft_itoa((int) fileStat.st_size), ft_strlen(ft_itoa( fileStat.st_size)));
+//        write(1, ctime(&fileStat.st_atime), ft_strlen(ctime(&fileStat.st_atime)) - 1);
+//        write(1, tmp->d_name, ft_strlen(tmp->d_name));
+
+char *strconcat(char *str1, char *str2){
+    char *tmp = ft_strjoin(str1, str2);
+    free(str1);
+    return tmp;
+}
+
+char *get_list_format_data(struct stat fileStat, char *filename){
+    char *ret_data = get_permissions(fileStat);
+    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, ft_itoa((int) fileStat.st_nlink));
+    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, get_username(fileStat.st_uid));
+    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, get_groupname(fileStat.st_gid));
+    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, ft_itoa(fileStat.st_size));
+    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, ctime(&fileStat.st_atime));
+    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, filename);
+    return ret_data;
 }
 
 char **duarrbsort(char **arr){//bubble - sort method
@@ -163,9 +206,6 @@ int	ft_strcmp_nc(char *s1, char *s2)//nc - no case
     return (to_lower(s1[i]) - to_lower(s2[i]));
 }
 
-
-
-//_____________________________functions___________________________
 char **get_output_args(char **args, int number){
     int string_pos = 0;
     char **out_list = NULL;
@@ -315,6 +355,11 @@ char *get_permissions(struct stat fileStat){
     char *permissions = malloc(sizeof(char) * 10);
     permissions[0] = (S_ISDIR(fileStat.st_mode)) ? 'd' : '-';
     permissions[0] = (S_ISLNK(fileStat.st_mode)) ? 'l' : '-';
+    permissions[0] = (S_ISREG(fileStat.st_mode)) ? 'r' : '-';
+    permissions[0] = (S_ISCHR(fileStat.st_mode)) ? 'c' : '-';
+    permissions[0] = (S_ISBLK(fileStat.st_mode)) ? 'b' : '-';
+    permissions[0] = (S_ISFIFO(fileStat.st_mode)) ? 'f' : '-';
+    permissions[0] = (S_ISSOCK(fileStat.st_mode)) ? 's' : '-';
     permissions[1] = (fileStat.st_mode & S_IRUSR) ? 'r' : '-';
     permissions[2] = (fileStat.st_mode & S_IWUSR) ? 'w' : '-';
     permissions[3] = (fileStat.st_mode & S_IXUSR) ? 'x' : '-';
