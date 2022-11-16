@@ -21,7 +21,7 @@ typedef struct s_options{
     bool    t_flag;
 }t_options;
 
-
+int         ft_ls(int argc, char **argv);
 char	    *ft_strchr(const char *s, int c);
 int         ft_strlen(char *str);
 char        *ft_strcpy(char *dest, char *src);
@@ -46,8 +46,13 @@ char        *get_list_format_data(struct stat fileStat, char *filename);
 
 
 int main(int argc, char **argv){
+    ft_ls(argc, argv);
+    return 0;
+}
+
+int ft_ls(int argc, char **argv){
     t_options   *out_options = get_output_options(argv, argc);//Gather Options
-    char        **out_list;
+    char        **out_list = NULL;
     char        **out_data;
 
     if (argc > 1)
@@ -56,33 +61,8 @@ int main(int argc, char **argv){
         out_list = stradd("./", out_list);
     out_data = get_output_data(out_list, out_options);
     output_data(out_data, out_options);
-//    char linkdata[1024];
-//    readlink("./kek", linkdata, 1024);
-//    printf("%s", linkdata);
-//    while (tmp != NULL) {
-//        lstat(tmp->d_name, &fileStat);
-//        write(1, get_permissions(fileStat), 10);
-//        write(1, "\t", 1);
-//        write(1, ft_itoa((int) fileStat.st_nlink), ft_strlen(ft_itoa((int) fileStat.st_nlink)));
-//        write(1, "\t", 1);
-//        write(1, get_username(fileStat.st_uid), ft_strlen(get_username(fileStat.st_uid)));
-//        write(1, "\t", 1);
-//        write(1, get_groupname(fileStat.st_gid), ft_strlen(get_groupname(fileStat.st_gid)));
-//        write(1, "\t", 1);
-//        write(1, ft_itoa((int) fileStat.st_size), ft_strlen(ft_itoa( fileStat.st_size)));
-//        write(1, "\t", 1);
-//        write(1, ctime(&fileStat.st_atime), ft_strlen(ctime(&fileStat.st_atime)) - 1);
-//        write(1, "\t", 1);
-//        write(1, tmp->d_name, ft_strlen(tmp->d_name));
-//        write(1, "\n", 1);
-////        free(&fileStat);
-//        tmp = readdir(opened);
-//    }
-//    closedir(opened);
-    return 0;
+    return (0);
 }
-
-
 
 
 //_____________________________functions___________________________
@@ -90,7 +70,10 @@ void output_data(char **data, t_options *out_options){
     for (int i = 0; i < duarrlen(data); ++i) {
         int j = out_options->r_flag ? duarrlen(data) - i - 1 : i;
         write(1, data[j], ft_strlen(data[j]));
-        write(1, "  ", 2);
+        if (out_options->l_flag)
+            write(1, "\n\r", 2);
+        else
+            write(1, "  ", 2);
     }
 }
 
@@ -102,16 +85,24 @@ char **get_output_data(char **args, t_options *out_options){
     char            **output_strings = NULL;
 
     for (int i = 0; i < duarrlen(args); ++i){
-        opened = opendir(args[i]);
-        while ((tmp = readdir(opened)) != NULL)
-            if (tmp->d_name[0] != '.' || out_options->a_flag) {
-                if (out_options->l_flag){
-                    stat(tmp->d_name, &fileStat);
-                    output_strings = stradd(get_list_format_data(fileStat, tmp->d_name), output_strings);
-                } else
-                    output_strings = stradd(tmp->d_name, output_strings);
-            }
-        closedir(opened);
+        stat(args[i], &fileStat);
+        if (S_ISDIR(fileStat.st_mode)) {
+            opened = opendir(args[i]);
+            while ((tmp = readdir(opened)) != NULL)
+                if (tmp->d_name[0] != '.' || out_options->a_flag) {
+                    if (out_options->l_flag) {
+                        stat(tmp->d_name, &fileStat);
+                        output_strings = stradd(get_list_format_data(fileStat, tmp->d_name), output_strings);//NEED REUSE
+                    } else
+                        output_strings = stradd(tmp->d_name, output_strings);
+                }
+            closedir(opened);
+        } else{
+            if (out_options->l_flag) {
+                output_strings = stradd(get_list_format_data(fileStat, args[i]), output_strings);//NEED REUSE
+            } else
+                output_strings = stradd(args[i], output_strings);
+        }
     }
     output_strings = out_options->t_flag ? duarrtsort(output_strings) : duarrbsort(output_strings);
     return output_strings;
@@ -135,14 +126,6 @@ char	*ft_strjoin(char const *s1, char const *s2)
     dest[i] = '\0';
     return (dest);
 }
-//        lstat(tmp->d_name, &fileStat);
-//        write(1, get_permissions(fileStat), 10);
-//        write(1, ft_itoa((int) fileStat.st_nlink), ft_strlen(ft_itoa((int) fileStat.st_nlink)));
-//        write(1, get_username(fileStat.st_uid), ft_strlen(get_username(fileStat.st_uid)));
-//        write(1, get_groupname(fileStat.st_gid), ft_strlen(get_groupname(fileStat.st_gid)));
-//        write(1, ft_itoa((int) fileStat.st_size), ft_strlen(ft_itoa( fileStat.st_size)));
-//        write(1, ctime(&fileStat.st_atime), ft_strlen(ctime(&fileStat.st_atime)) - 1);
-//        write(1, tmp->d_name, ft_strlen(tmp->d_name));
 
 char *strconcat(char *str1, char *str2){
     char *tmp = ft_strjoin(str1, str2);
@@ -152,17 +135,17 @@ char *strconcat(char *str1, char *str2){
 
 char *get_list_format_data(struct stat fileStat, char *filename){
     char *ret_data = get_permissions(fileStat);
-    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, " ");
     ret_data = strconcat(ret_data, ft_itoa((int) fileStat.st_nlink));
-    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, " ");
     ret_data = strconcat(ret_data, get_username(fileStat.st_uid));
-    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, " ");
     ret_data = strconcat(ret_data, get_groupname(fileStat.st_gid));
-    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, " ");
     ret_data = strconcat(ret_data, ft_itoa(fileStat.st_size));
-    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, "\t");
     ret_data = strconcat(ret_data, ctime(&fileStat.st_atime));
-    ret_data = strconcat(ret_data, "  ");
+    ret_data = strconcat(ret_data, "\e[1A\e[70C");
     ret_data = strconcat(ret_data, filename);
     return ret_data;
 }
