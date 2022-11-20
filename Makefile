@@ -1,25 +1,55 @@
-CC=clang
-FLG=-Wall -Wextra -Werror
-SRC=main.c
-OBJ=$(SRC:.c=.o)
 NAME=ft_ls
 
+CC=clang
+FLG=-Wall -Wextra -Werror
+SRC=	main.c ft_ls.c output_data.c duarrtsort.c\
+		fncs/duarrbsort.c fncs/ft_atoi.c fncs/ft_itoa.c\
+		fncs/duarrfree.c fncs/duarrlen.c fncs/ft_strchr.c\
+		fncs/ft_strcmp_nc.c fncs/ft_strcpy.c fncs/stradd.c\
+		fncs/ft_strdup.c fncs/ft_strjoin.c fncs/ft_strlen.c\
+		fncs/strconcat.c fncs/to_lower.c gets/get_groupname.c\
+		gets/get_list_format_data.c gets/get_output_options.c\
+		gets/get_permissions.c gets/get_output_data.c\
+		gets/get_username.c gets/get_output_args.c
+OBJ=$(SRC:.c=.o)
+
 all: $(SRC) $(NAME)
+	@echo "\033[32;1m───[.o]-files => o_files-dir\033[0m"
+	@mkdir o_files
+	@mv fncs/*.o o_files
+	@mv gets/*.o o_files
+	@mv *.o o_files
 
 $(NAME): $(OBJ)
+	@echo "\033[32;1m└──Get object files\033[0m"
+	@echo "\033[32;1m┌──Compile\033[0m"
 	$(CC) $(FLG) $(OBJ) -o $@
 
 .cpp.o:
 	$(CC) $(FLG) $< -o $@
 
 clean:
-	rm *.o
+	@echo "\033[32;1m───Object files have been removed\033[0m"
+	@rm -rf o_files
 
 fclean: clean
-	rm ${NAME}
+	@rm ${NAME}
+	@echo "\033[32;1m───The project has been cleared\033[0m"
 
 re: fclean all
 #____________________________TESTS________________________________
+
+testcases:
+	@echo "\033[33;1mTESTCASES(Please compile ft_ls before running test cases)\n\033[35;1m└─$$ make test_sc\033[0m - single cases\n\
+\033[35;1m└─$$ make test_mc\033[0m - multiple cases\n\
+\033[35;1m└─$$ make test_wf\033[0m - without flags\n\
+\033[35;1m└─$$ make test_a\033[0m - flag 'a'\n\
+\033[35;1m└─$$ make test_r\033[0m - flag 'r'\n\
+\033[35;1m└─$$ make test_R\033[0m - flag 'R'\n\
+\033[35;1m└─$$ make test_t\033[0m - flag 't'\n\
+\033[35;1m└─$$ make test_l\033[0m - flag 'l'\033[0m\n\
+\033[35;1m└─$$ make test\033[0m - all testcases\033[0m\n"
+
 test_a:
 	@echo "\033[32;1m||||||||WITH_FLAG_[[a]]: \033[0m\n"
 	@echo "\033[35;1m____FT_LS____\033[0m"
@@ -134,15 +164,5 @@ test_mc:
 	@echo "\033[35;1m-------------\n\n\033[0m"
 
 test: test_sc test_mc
-
-testcases:
-	@echo "\033[35;1mtest_sc - single cases, \n\
-test_mc - multiple cases\n\
-test_wf - without flags\n\
-test_a - flag \'a\'\n\
-test_r - flag \'r\'\n\
-test_R - flag \'R\'\n\
-test_t - flag \'t\'\n\
-test_l - flag \'l\'\033[0m\n"
 
 .PHONY:	all clean fclean re
