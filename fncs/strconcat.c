@@ -5,6 +5,7 @@
 
 char *strconcat(char *str1, char *str2){
     char *tmp = ft_strjoin(str1, str2);
-    free(str1);
+    if (str1)
+        free(str1);
     return tmp;
 }

@@ -30,7 +30,7 @@ int         ft_strlen(char *str);
 char        *ft_strcpy(char *dest, char *src);
 char        *get_permissions(struct stat fileStat);
 int         ft_atoi(const char *str);
-char	    *ft_itoa(int nb);
+char		*ft_itoa(long n);
 char        *get_username(uid_t uid);
 char        *get_groupname(gid_t gid);
 t_options   *get_output_options(char **args, int number);
