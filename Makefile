@@ -10,7 +10,9 @@ SRC=	main.c ft_ls.c output_data.c duarrtsort.c\
 		fncs/strconcat.c fncs/to_lower.c gets/get_groupname.c\
 		gets/get_list_format_data.c gets/get_output_options.c\
 		gets/get_permissions.c gets/get_output_data.c\
-		gets/get_username.c gets/get_output_args.c
+		gets/get_username.c gets/get_output_args.c\
+		fncs/ft_substr.c
+
 OBJ=$(SRC:.c=.o)
 
 all: $(SRC) $(NAME)

@@ -48,5 +48,6 @@ char        **duarrtsort(char **arr);
 char        *get_list_format_data(struct stat fileStat, char *filename);
 char        *strconcat(char *str1, char *str2);
 char        *ft_strjoin(char const *s1, char const *s2);
+char        *ft_substr(char const *s, unsigned int start, size_t len);
 
 #endif //FT_LS_FNCS_H

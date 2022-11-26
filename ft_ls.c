@@ -14,5 +14,9 @@ int ft_ls(int argc, char **argv){
         out_list = stradd("./", out_list);
     out_data = get_output_data(out_list, out_options);
     output_data(out_data, out_options);
+
+    free(out_options);
+    duarrfree(out_list);
+    duarrfree(out_data);
     return (0);
 }

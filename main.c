@@ -5,6 +5,7 @@
 
 int main(int argc, char **argv){
     ft_ls(argc, argv);
+//    while (1);
     return 0;
 }
 

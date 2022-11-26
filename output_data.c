@@ -9,7 +9,7 @@ void output_data(char **data, t_options *out_options){
         write(1, data[j], ft_strlen(data[j]));
         if (out_options->l_flag)
             write(1, "\n\r", 2);
-        else
+        else if (data[j][ft_strlen(data[j]) - 1] != '\n')
             write(1, "  ", 2);
     }
 }
