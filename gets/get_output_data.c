@@ -29,14 +29,42 @@ char **get_output_data(char **args, t_options *out_options){
                         output_strings = stradd(tmp->d_name, output_strings);
                 }
             closedir(opened);
-//                free(opened);
         } else{
             if (out_options->l_flag) {
                 output_strings = stradd(get_list_format_data(fileStat, args[i]), output_strings);//NEED REUSE
             } else
                 output_strings = stradd(args[i], output_strings);
+            output_strings = stradd("\n\n", output_strings);
         }
     }
-//    output_strings = out_options->t_flag ? duarrtsort(output_strings) : duarrbsort(output_strings);
     return output_strings;
+}
+
+//char **sort_by_dir(char **list){
+//    char  **tmp = NULL;
+//
+//    for (int i = 0; i < duarrlen(list); ++i) {
+//        if ()
+//    }
+//    return tmp;
+//}
+
+char **duarrfpte(char **arr, int pos){//fpte - from position to end
+    char *tmp = NULL;
+
+    if(arr && arr[pos]){
+        tmp = arr[pos];
+        arr[pos] = arr[duarrlen(arr) - 1];
+        arr[duarrlen(arr) - 1] = tmp;
+    }
+    return arr;
+}
+
+char **duarrconcat(char **first_arr, char **second_arr){
+    char    **resulr_arr = NULL;
+
+    resulr_arr = first_arr == NULL ? second_arr : first_arr;
+    for (int i = 0; resulr_arr && i < duarrlen(second_arr); ++i)
+        resulr_arr = stradd(second_arr[i], first_arr);
+    return resulr_arr;
 }
